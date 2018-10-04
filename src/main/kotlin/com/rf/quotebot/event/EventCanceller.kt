@@ -23,7 +23,7 @@ class EventCanceller(private val messageSender: MessageSender,
             messageSender.replyWithMarkup(originalMessage, "Välj bokning att ta bort", keyboard)
             timeout.schedule(object : TimerTask() {
                 override fun run() {
-                    messageSender.send(originalMessage.chat().id(), "Avbokning avbruten")
+                    messageSender.removeKeyboard(originalMessage, "Avbokning avbruten")
                     destroy()
                 }
             }, 60_000)
@@ -37,7 +37,7 @@ class EventCanceller(private val messageSender: MessageSender,
         event?.let {
             eventRepository.cancel(it.id)
         }
-        messageSender.replyTo(message, "Bokning $event borttagen")
+        messageSender.removeKeyboard(message, "Bokning $event borttagen")
         destroy()
     }
 

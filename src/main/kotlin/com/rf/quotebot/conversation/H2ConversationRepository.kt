@@ -30,19 +30,19 @@ class H2ConversationRepository(private val database: Database) : ConversationRep
     }
 
     override fun all(): Collection<Conversation> {
-        return transaction {
+        return transaction(database) {
             H2Conversation.wrapRows(Conversations.selectAll()).map { toConversation(it) }
         }
     }
 
     override fun get(id: Int): Conversation {
-        return transaction {
+        return transaction(database) {
             H2Conversation.findById(id)?.let { toConversation(it) }!!
         }
     }
 
     override fun search(s: String): Conversation? {
-        return transaction {
+        return transaction(database) {
             H2Conversation.wrapRows(Conversations.innerJoin(Messages)
                     .select { Messages.text like "%$s%" or (Conversations.title like "%$s%") }
                     .orderBy(org.jetbrains.exposed.sql.Random())
@@ -52,7 +52,7 @@ class H2ConversationRepository(private val database: Database) : ConversationRep
     }
 
     override fun random(): Conversation? {
-        return transaction {
+        return transaction(database) {
             H2Conversation.wrapRows(Conversations
                     .selectAll()
                     .orderBy(org.jetbrains.exposed.sql.Random())

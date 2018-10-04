@@ -70,9 +70,9 @@ class Beatrice(token: String,
                     else
                         messageSender.replyTo(message, "Inga resultat \uD83D\uDE31") // screaming
                 }
-                "createevent" -> book(message)
-                "removeevent" -> removeEvent(message)
-                "listevents" -> messageSender.replyTo(message, eventList())
+                "eventcreate" -> book(message)
+                "eventcancel" -> removeEvent(message)
+                "eventlist" -> messageSender.replyTo(message, eventList())
                 else -> {
                 }
             }
@@ -83,7 +83,10 @@ class Beatrice(token: String,
         setHandler(message.from(), EventCanceller(messageSender, message, eventRepository, clearHandler(message.from())))
     }
 
-    private fun eventList(): String = eventRepository.list().joinToString(separator = "\n")
+    private fun eventList(): String {
+        val eventList = eventRepository.list().joinToString(separator = "\n")
+        return if (eventList.isEmpty()) "Inga events bokade" else eventList
+    }
 
     private fun book(message: Message) {
         setHandler(message.from(), EventBooker(messageSender, message, eventRepository, clearHandler(message.from())))

@@ -15,7 +15,7 @@ class EventBooker(private val messageSender: MessageSender,
                   private val eventRepository: EventRepository,
                   private val destroyMe: () -> Unit) : ConversationHandler {
     private val logger = LoggerFactory.getLogger(this::class.java)
-    private val eventTimeFormatter = DateTimeFormat.forPattern("dd/MM HH:mm")
+    private val timeInputFormat = DateTimeFormat.forPattern("dd/MM HH:mm")
     private val timeout = Timer()
 
     init {
@@ -40,7 +40,7 @@ class EventBooker(private val messageSender: MessageSender,
         // set date -> set title -> confirm
         when {
             date == null -> try {
-                val d = DateTime.parse(text, eventTimeFormatter).withYear(DateTime.now().year)
+                val d = DateTime.parse(text, timeInputFormat).withYear(DateTime.now().year)
                 date = if (d.isBeforeNow) d.withYear(d.year + 1) else d
                 messageSender
                 messageSender.requireInput(message, "Ange titel för eventet")
@@ -50,14 +50,14 @@ class EventBooker(private val messageSender: MessageSender,
             title == null -> {
                 title = text
                 val keyboard = ReplyKeyboardMarkup(arrayOf(arrayOf(nope, yes)), true, true, true)
-                messageSender.replyWithMarkup(message, "Bokat $date - $title?", keyboard)
+                messageSender.replyWithMarkup(message, "Boka *${timeInputFormat.print(date)} - $title*?", keyboard)
             }
             else -> {
                 if (message.text() == yes) {
                     eventRepository.book(originalMessage.from().username(), date!!, title!!)
-                    messageSender.send(originalMessage.chat().id(), "$date - $title bokad!")
+                    messageSender.removeKeyboard(originalMessage, "*${timeInputFormat.print(date)} - $title* **bokad!**")
                 } else {
-                    messageSender.replyTo(originalMessage, "Bokning avbruten")
+                    messageSender.removeKeyboard(originalMessage, "Bokning avbruten")
                 }
                 destroy()
             }

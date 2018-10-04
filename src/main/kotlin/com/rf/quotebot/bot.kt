@@ -13,10 +13,11 @@ fun main(args: Array<String>) {
     val parser = DefaultParser()
     try {
         val cmd = parser.parse(opts, args)
+        val db = cmd.getOptionValue("db")
         val config = Config(
                 cmd.getOptionValue("t"),
                 cmd.getOptionValue("cid").toLong(),
-                cmd.getOptionValue("db")
+                "jdbc:h2:tcp://localhost/$db"
         )
         BotRunner(config).run()
     } catch (e: ParseException) {

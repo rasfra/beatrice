@@ -5,6 +5,7 @@ import com.pengrad.telegrambot.model.Message
 import com.pengrad.telegrambot.model.request.ForceReply
 import com.pengrad.telegrambot.model.request.Keyboard
 import com.pengrad.telegrambot.model.request.ParseMode
+import com.pengrad.telegrambot.model.request.ReplyKeyboardRemove
 import com.pengrad.telegrambot.request.SendMessage
 import org.slf4j.LoggerFactory
 
@@ -13,6 +14,7 @@ interface MessageSender {
     fun replyTo(message: Message, text: String)
     fun requireInput(message: Message, text: String)
     fun replyWithMarkup(message: Message, text: String, keyboard: Keyboard)
+    fun removeKeyboard(message: Message, text: String)
 }
 
 class TelegramMessageSender(private val bot: TelegramBot) : MessageSender {
@@ -40,6 +42,11 @@ class TelegramMessageSender(private val bot: TelegramBot) : MessageSender {
     override fun replyWithMarkup(message: Message, text: String, keyboard: Keyboard) {
         send(replyMsg(message, text)
                 .replyMarkup(keyboard))
+    }
+
+    override fun removeKeyboard(message: Message, text: String) {
+        send(replyMsg(message, text)
+                .replyMarkup(ReplyKeyboardRemove()))
     }
 
     private fun msg(chatId: Long, text: String) =
