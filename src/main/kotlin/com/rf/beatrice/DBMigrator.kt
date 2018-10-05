@@ -1,4 +1,4 @@
-package com.rf.quotebot
+package com.rf.beatrice
 
 import org.flywaydb.core.Flyway
 import org.flywaydb.core.api.configuration.FluentConfiguration

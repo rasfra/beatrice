@@ -1,8 +1,8 @@
-package com.rf.quotebot.conversation
+package com.rf.beatrice.conversation
 
-import com.rf.quotebot.Conversations
-import com.rf.quotebot.H2Conversation
-import com.rf.quotebot.Messages
+import com.rf.beatrice.Conversations
+import com.rf.beatrice.H2Conversation
+import com.rf.beatrice.Messages
 import org.jetbrains.exposed.dao.EntityID
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction

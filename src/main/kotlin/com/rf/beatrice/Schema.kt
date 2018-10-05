@@ -1,4 +1,4 @@
-package com.rf.quotebot
+package com.rf.beatrice
 
 import org.jetbrains.exposed.dao.EntityID
 import org.jetbrains.exposed.dao.IntEntity

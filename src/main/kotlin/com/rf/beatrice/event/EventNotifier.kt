@@ -1,6 +1,6 @@
-package com.rf.quotebot.event
+package com.rf.beatrice.event
 
-import com.rf.quotebot.MessageSender
+import com.rf.beatrice.MessageSender
 import org.joda.time.DateTime
 import org.joda.time.LocalDate
 import org.slf4j.LoggerFactory

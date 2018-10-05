@@ -1,4 +1,4 @@
-package com.rf.quotebot
+package com.rf.beatrice
 
 import org.apache.commons.cli.DefaultParser
 import org.apache.commons.cli.Options

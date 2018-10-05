@@ -1,4 +1,4 @@
-package com.rf.quotebot.conversation
+package com.rf.beatrice.conversation
 
 import org.apache.commons.lang3.StringUtils
 import java.util.*

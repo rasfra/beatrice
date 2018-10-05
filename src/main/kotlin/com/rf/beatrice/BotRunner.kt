@@ -1,7 +1,7 @@
-package com.rf.quotebot
+package com.rf.beatrice
 
-import com.rf.quotebot.conversation.H2ConversationRepository
-import com.rf.quotebot.event.H2EventRepository
+import com.rf.beatrice.conversation.H2ConversationRepository
+import com.rf.beatrice.event.H2EventRepository
 import org.h2.tools.Server
 import org.jetbrains.exposed.sql.Database
 import org.slf4j.LoggerFactory

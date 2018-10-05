@@ -1,4 +1,4 @@
-package com.rf.quotebot.event
+package com.rf.beatrice.event
 
 import org.joda.time.DateTime
 

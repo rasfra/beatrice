@@ -1,10 +1,10 @@
-package com.rf.quotebot.conversation
+package com.rf.beatrice.conversation
 
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.Message
 import com.pengrad.telegrambot.model.User
 import com.pengrad.telegrambot.request.SendMessage
-import com.rf.quotebot.ConversationHandler
+import com.rf.beatrice.ConversationHandler
 import org.slf4j.LoggerFactory
 import java.util.*
 

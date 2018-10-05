@@ -1,7 +1,7 @@
-package com.rf.quotebot.event
+package com.rf.beatrice.event
 
-import com.rf.quotebot.Events
-import com.rf.quotebot.H2Event
+import com.rf.beatrice.Events
+import com.rf.beatrice.H2Event
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert

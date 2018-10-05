@@ -1,4 +1,4 @@
-package com.rf.quotebot
+package com.rf.beatrice
 
 import com.pengrad.telegrambot.model.Message
 

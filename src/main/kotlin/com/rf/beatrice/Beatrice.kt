@@ -1,15 +1,15 @@
-package com.rf.quotebot
+package com.rf.beatrice
 
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.Message
 import com.pengrad.telegrambot.model.User
-import com.rf.quotebot.conversation.Conversation
-import com.rf.quotebot.conversation.ConversationRepository
-import com.rf.quotebot.conversation.QuoteConversation
-import com.rf.quotebot.event.EventBooker
-import com.rf.quotebot.event.EventCanceller
-import com.rf.quotebot.event.EventNotifier
-import com.rf.quotebot.event.EventRepository
+import com.rf.beatrice.conversation.Conversation
+import com.rf.beatrice.conversation.ConversationRepository
+import com.rf.beatrice.conversation.QuoteConversation
+import com.rf.beatrice.event.EventBooker
+import com.rf.beatrice.event.EventCanceller
+import com.rf.beatrice.event.EventNotifier
+import com.rf.beatrice.event.EventRepository
 import org.slf4j.LoggerFactory
 
 

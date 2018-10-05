@@ -1,9 +1,9 @@
-package com.rf.quotebot.event
+package com.rf.beatrice.event
 
 import com.pengrad.telegrambot.model.Message
 import com.pengrad.telegrambot.model.request.ReplyKeyboardMarkup
-import com.rf.quotebot.ConversationHandler
-import com.rf.quotebot.MessageSender
+import com.rf.beatrice.ConversationHandler
+import com.rf.beatrice.MessageSender
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 import org.slf4j.LoggerFactory

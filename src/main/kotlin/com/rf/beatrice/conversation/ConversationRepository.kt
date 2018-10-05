@@ -1,4 +1,4 @@
-package com.rf.quotebot.conversation
+package com.rf.beatrice.conversation
 
 interface ConversationRepository {
     fun all(): Collection<Conversation>
