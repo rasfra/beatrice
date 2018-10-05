@@ -44,6 +44,8 @@ dependencies {
     compile group: 'org.flywaydb', name: 'flyway-core', version: '5.1.4'
     testCompile 'junit:junit:4.11'
     testCompile "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
+    testCompile 'com.github.gmazzo:okhttp-mock:1.0.4'
+    testCompile 'com.nhaarman.mockitokotlin2:mockito-kotlin:2.0.0-RC1'
 }
 
 task wrapper(type: Wrapper) {

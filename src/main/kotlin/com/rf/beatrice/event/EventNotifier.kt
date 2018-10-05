@@ -8,13 +8,12 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 
 class EventNotifier(private val messageSender: MessageSender,
-                    private val chatId: Long,
                     private val eventRepository: EventRepository) {
     private val logger = LoggerFactory.getLogger(this::class.java)
     private val timers = HashMap<Int, Timer>()
     private val dailyReminder = Timer()
     fun start() {
-        logger.info("Starting Event notifier for chatId $chatId")
+        logger.info("Starting Event notifier")
         eventRepository.purge()
         eventRepository.list()
                 .filter { notificationInTime(it) }
@@ -39,8 +38,7 @@ class EventNotifier(private val messageSender: MessageSender,
             override fun run() {
                 val todaysEvents = eventRepository.list().filter { it.date.toLocalDate() == LocalDate.now() }
                 if (todaysEvents.isNotEmpty()) {
-                    val markdown = "**Event idag**\n${todaysEvents.joinToString("\n")}"
-                    messageSender.send(chatId, markdown)
+                    messageSender.sendToMainChat("**Event idag**\n${todaysEvents.joinToString("\n")}")
                 }
             }
         }, nextDailyReminder.toDate(), TimeUnit.MILLISECONDS.convert(1, TimeUnit.DAYS))
@@ -62,7 +60,7 @@ class EventNotifier(private val messageSender: MessageSender,
 
     fun sendNotification(event: EventBooking) {
         logger.info("Notifying about $event, removing from eventRepository")
-        messageSender.send(chatId, "**${event.description()} börjar kl ${event.formatTime()}!**")
+        messageSender.sendToMainChat("**${event.description()} börjar kl ${event.formatTime()}!**")
         eventRepository.cancel(event.id)
     }
 

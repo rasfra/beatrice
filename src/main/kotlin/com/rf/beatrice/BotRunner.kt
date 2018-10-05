@@ -1,5 +1,6 @@
 package com.rf.beatrice
 
+import com.pengrad.telegrambot.TelegramBot
 import com.rf.beatrice.conversation.H2ConversationRepository
 import com.rf.beatrice.event.H2EventRepository
 import org.h2.tools.Server
@@ -32,8 +33,9 @@ class BotRunner(private val config: Config) {
         logger.info("Connectedto H2 server...")
         val conversationRepository = H2ConversationRepository(database)
         val eventRepository = H2EventRepository(database)
-        val bot = Beatrice(config.telegramToken, config.chatId, conversationRepository, eventRepository)
-        bot.runBlocking()
+        val telegramBot = TelegramBot(config.telegramToken)
+        val beatrice = Beatrice(TelegramMessageSender(telegramBot, config.chatId), conversationRepository, eventRepository)
+        telegramBot.setUpdatesListener(beatrice::process)
     }
 
 }

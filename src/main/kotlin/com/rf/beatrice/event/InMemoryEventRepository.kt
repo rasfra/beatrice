@@ -9,12 +9,6 @@ class InMemoryEventRepository : EventRepository {
     private val events = ArrayList<EventBooking>()
     private val callbacks = ArrayList<(EventChange) -> Unit>()
 
-    init {
-        book("sassysess", DateTime.now().plusHours(1).plusSeconds(30), "BEEER AT DOVAS1")
-        book("sassysess", DateTime.now().plusHours(2).plusSeconds(30), "BEEER AT DOVAS2")
-        book("sassysess", DateTime.now().plusHours(3).plusSeconds(30), "BEEER AT DOVAS3")
-        book("sassysess", DateTime.now().plusHours(4).plusSeconds(30), "BEEER AT DOVAS4")
-    }
 
     override fun get(id: Int): EventBooking {
         return events.first { it.id == id }
@@ -50,5 +44,10 @@ class InMemoryEventRepository : EventRepository {
     override fun registerChangeListener(callback: (EventChange) -> Unit) {
         logger.info("Callback registered")
         callbacks.add { callback }
+    }
+
+    fun clear() {
+        events.clear()
+        callbacks.clear()
     }
 }

@@ -1,8 +1,7 @@
 package com.rf.beatrice
 
-import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.Message
-import com.pengrad.telegrambot.model.User
+import com.pengrad.telegrambot.model.Update
 import com.rf.beatrice.conversation.Conversation
 import com.rf.beatrice.conversation.ConversationRepository
 import com.rf.beatrice.conversation.QuoteConversation
@@ -13,38 +12,34 @@ import com.rf.beatrice.event.EventRepository
 import org.slf4j.LoggerFactory
 
 
-class Beatrice(token: String,
-               beaChatId: Long,
+class Beatrice(private val messageSender: MessageSender,
                private val conversationRepository: ConversationRepository,
                private val eventRepository: EventRepository) {
     private val logger = LoggerFactory.getLogger(this::class.java)
-    private val bot = TelegramBot(token)
-    private val messageSender = TelegramMessageSender(bot)
-    private val eventNotifier = EventNotifier(messageSender, beaChatId, eventRepository)
-    private val conversationHandlers = HashMap<User, ConversationHandler>()
+    private val eventNotifier = EventNotifier(messageSender, eventRepository)
+    private val conversationHandlers = HashMap<String, ConversationHandler>()
 
-    fun runBlocking() {
-        logger.info("Starting bot, listening to updates...")
+    init {
         eventNotifier.start()
-        bot.setUpdatesListener {
-            // process updates
-            val message = it.first().message()
-            if (message != null) {
-                logger.debug("Recieved update: ${message.from().username()}: ${message.text()}")
-                try {
-                    val handler = conversationHandlers[message.from()]
-                    if (handler != null) {
-                        handler.handle(message)
-                    } else if (message.text() != null) {
-                        handleCommand(message)
-                    }
-                } catch (e: Exception) {
-                    logger.error("Error handling update", e)
-                    sendError(message, e)
+    }
+
+    fun process(updates: List<Update>): Int {
+        val message = updates.first().message()
+        if (message != null) {
+            logger.debug("Recieved update: ${message.from().username()}: ${message.text()}")
+            try {
+                val handler = conversationHandlers[message.from().username()]
+                if (handler != null) {
+                    handler.handle(message)
+                } else if (message.text() != null) {
+                    handleCommand(message)
                 }
+            } catch (e: Exception) {
+                logger.error("Error handling update", e)
+                sendError(message, e)
             }
-            it.first().updateId()
         }
+        return updates.first().updateId()
     }
 
     private fun handleCommand(message: Message) {
@@ -80,7 +75,8 @@ class Beatrice(token: String,
     }
 
     private fun removeEvent(message: Message) {
-        setHandler(message.from(), EventCanceller(messageSender, message, eventRepository, clearHandler(message.from())))
+        setHandler(message.from().username(), EventCanceller(messageSender, message, eventRepository,
+                clearHandler(message.from().username())))
     }
 
     private fun eventList(): String {
@@ -89,15 +85,16 @@ class Beatrice(token: String,
     }
 
     private fun book(message: Message) {
-        setHandler(message.from(), EventBooker(messageSender, message, eventRepository, clearHandler(message.from())))
+        setHandler(message.from().username(), EventBooker(messageSender, message, eventRepository,
+                clearHandler(message.from().username())))
     }
 
     private fun save(message: Message, title: String?) {
-        setHandler(message.from(), QuoteConversation(bot, message.from(), message.chat().id(), title,
-                conversationRepository, clearHandler(message.from())))
+        setHandler(message.from().username(), QuoteConversation(messageSender, message, title, conversationRepository,
+                clearHandler(message.from().username())))
     }
 
-    private fun setHandler(user: User, handler: ConversationHandler) {
+    private fun setHandler(user: String, handler: ConversationHandler) {
         val currentHandler = conversationHandlers[user]
         if (currentHandler != null) {
             currentHandler.cancel()
@@ -106,7 +103,7 @@ class Beatrice(token: String,
         conversationHandlers[user] = handler
     }
 
-    private fun clearHandler(user: User): () -> Unit = { conversationHandlers.remove(user) }
+    private fun clearHandler(user: String): () -> Unit = { conversationHandlers.remove(user) }
 
     private fun sendError(m: Message, e: Exception) {
         try {

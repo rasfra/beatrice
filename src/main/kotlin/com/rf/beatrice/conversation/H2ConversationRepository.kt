@@ -9,17 +9,18 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import org.joda.time.DateTime
 
 class H2ConversationRepository(private val database: Database) : ConversationRepository {
-    override fun store(c: Conversation) {
+    override fun store(cMessages: List<ConversationMessage>, cTitle: String?,
+                       cSource: Source, cUploadedBy: String?): Conversation {
         var id: EntityID<Int>? = null
         transaction(database) {
             id = Conversations.insert {
-                it[title] = c.title
-                it[date] = DateTime(c.date)
-                it[src] = c.source.name
-                it[uploadedBy] = c.uploadedBy
+                it[title] = cTitle
+                it[date] = DateTime.now()
+                it[src] = cSource.name
+                it[uploadedBy] = cUploadedBy
             } get Conversations.id
 
-            c.messages.forEach { m ->
+            cMessages.forEach { m ->
                 Messages.insert {
                     it[conversation] = id!!
                     it[from] = m.from
@@ -27,17 +28,18 @@ class H2ConversationRepository(private val database: Database) : ConversationRep
                 }
             }
         }
+        return H2Conversation[id!!].toConversation()
     }
 
     override fun all(): Collection<Conversation> {
         return transaction(database) {
-            H2Conversation.wrapRows(Conversations.selectAll()).map { toConversation(it) }
+            H2Conversation.wrapRows(Conversations.selectAll()).map { it.toConversation() }
         }
     }
 
     override fun get(id: Int): Conversation {
         return transaction(database) {
-            H2Conversation.findById(id)?.let { toConversation(it) }!!
+            H2Conversation.findById(id)?.let { it.toConversation() }!!
         }
     }
 
@@ -47,7 +49,7 @@ class H2ConversationRepository(private val database: Database) : ConversationRep
                     .select { Messages.text like "%$s%" or (Conversations.title like "%$s%") }
                     .orderBy(org.jetbrains.exposed.sql.Random())
                     .limit(1)
-            ).firstOrNull()?.let { toConversation(it) }
+            ).firstOrNull()?.let { it.toConversation() }
         }
     }
 
@@ -57,16 +59,17 @@ class H2ConversationRepository(private val database: Database) : ConversationRep
                     .selectAll()
                     .orderBy(org.jetbrains.exposed.sql.Random())
                     .limit(1))
-                    .first()?.let { toConversation(it) }
+                    .firstOrNull()?.let { it.toConversation() }
         }
     }
 
-    private fun toConversation(h2: H2Conversation): Conversation {
+    private fun H2Conversation.toConversation(): Conversation {
         return Conversation(
-                h2.date.toDate(),
-                h2.messages.map { ConversationMessage(it.from, it.text) },
-                h2.title,
-                Source.valueOf(h2.src),
-                h2.uploadedBy)
+                id.value,
+                date,
+                messages.map { ConversationMessage(it.from, it.text) },
+                title,
+                Source.valueOf(src),
+                uploadedBy)
     }
 }

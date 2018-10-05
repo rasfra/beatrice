@@ -1,10 +1,11 @@
 package com.rf.beatrice.conversation
 
-import java.text.SimpleDateFormat
-import java.util.*
+import org.joda.time.DateTime
+import org.joda.time.format.DateTimeFormat
 
 class Conversation(
-        val date: Date,
+        val id: Int,
+        val date: DateTime,
         val messages: List<ConversationMessage>,
         val title: String?,
         val source: Source,
@@ -23,7 +24,7 @@ class Conversation(
         return str
     }
 
-    fun prettyDate(): String = SimpleDateFormat("yyyy-MM-dd").format(date)
+    fun prettyDate(): String = DateTimeFormat.forPattern("yyyy-MM-dd").print(date)
     override fun toString(): String {
         return "Conversation '$title': size: ${messages.size}"
     }

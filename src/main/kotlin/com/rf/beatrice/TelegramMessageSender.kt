@@ -11,19 +11,24 @@ import org.slf4j.LoggerFactory
 
 interface MessageSender {
     fun send(chatId: Long, text: String)
+    fun sendToMainChat(text: String)
     fun replyTo(message: Message, text: String)
     fun requireInput(message: Message, text: String)
     fun replyWithMarkup(message: Message, text: String, keyboard: Keyboard)
     fun removeKeyboard(message: Message, text: String)
 }
 
-class TelegramMessageSender(private val bot: TelegramBot) : MessageSender {
+class TelegramMessageSender(private val bot: TelegramBot, private val mainChatId: Long) : MessageSender {
     private val logger = LoggerFactory.getLogger(this::class.java)
 
     private fun send(message: SendMessage) {
         logger.info("Sending ${message.parameters}")
         val response = bot.execute(message)
         assert(response.isOk)
+    }
+
+    override fun sendToMainChat(text: String) {
+        send(mainChatId, text)
     }
 
     override fun send(chatId: Long, text: String) {

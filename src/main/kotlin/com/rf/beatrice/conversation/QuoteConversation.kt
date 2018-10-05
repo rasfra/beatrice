@@ -1,16 +1,13 @@
 package com.rf.beatrice.conversation
 
-import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.Message
-import com.pengrad.telegrambot.model.User
-import com.pengrad.telegrambot.request.SendMessage
 import com.rf.beatrice.ConversationHandler
+import com.rf.beatrice.MessageSender
 import org.slf4j.LoggerFactory
 import java.util.*
 
-class QuoteConversation(private val bot: TelegramBot,
-                        private val user: User,
-                        private val chatId: Long,
+class QuoteConversation(private val messageSender: MessageSender,
+                        private val message: Message,
                         private val title: String?,
                         private val conversationRepository: ConversationRepository,
                         destroyMe: () -> Unit) : ConversationHandler {
@@ -20,14 +17,14 @@ class QuoteConversation(private val bot: TelegramBot,
     private val timer = Timer()
 
     init {
+        val user = message.from().username()
         logger.info("Starting session for $user, killing in $timeout ms")
         timer.schedule(object : TimerTask() {
             override fun run() {
                 if (messages.isNotEmpty()) {
-                    val conversation = Conversation(Date(), messages, title, Source.TELEGRAM, user.username())
-                    conversationRepository.store(conversation)
-                    logger.info("Saved conversation $conversation by $user")
-                    bot.execute(SendMessage(chatId, "Konversation '${title ?: "ingen titel"}' sparad!"))
+                    conversationRepository.store(messages, title, Source.TELEGRAM, user)
+                    logger.info("Saved conversation by $user")
+                    messageSender.replyTo(message, "Konversation '${title ?: "ingen titel"}' sparad!")
                     destroyMe.invoke()
                 }
             }
