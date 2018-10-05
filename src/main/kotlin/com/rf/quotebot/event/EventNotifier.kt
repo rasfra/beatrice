@@ -38,8 +38,10 @@ class EventNotifier(private val messageSender: MessageSender,
         dailyReminder.schedule(object : TimerTask() {
             override fun run() {
                 val todaysEvents = eventRepository.list().filter { it.date.toLocalDate() == LocalDate.now() }
-                val markdown = "**Event idag**\n${todaysEvents.joinToString("\n")}"
-                messageSender.send(chatId, markdown)
+                if (todaysEvents.isNotEmpty()) {
+                    val markdown = "**Event idag**\n${todaysEvents.joinToString("\n")}"
+                    messageSender.send(chatId, markdown)
+                }
             }
         }, nextDailyReminder.toDate(), TimeUnit.MILLISECONDS.convert(1, TimeUnit.DAYS))
     }
