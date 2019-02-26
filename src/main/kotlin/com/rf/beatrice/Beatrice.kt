@@ -17,6 +17,7 @@ class Beatrice(private val messageSender: MessageSender,
                private val eventRepository: EventRepository) {
     private val logger = LoggerFactory.getLogger(this::class.java)
     private val eventNotifier = EventNotifier(messageSender, eventRepository)
+    private val quoteHandlers = HashMap<String, QuoteConversation>()
     private val conversationHandlers = HashMap<String, ConversationHandler>()
 
     init {
@@ -29,10 +30,10 @@ class Beatrice(private val messageSender: MessageSender,
             logger.debug("Recieved update: ${message.from().username()}: ${message.text()}")
             try {
                 val handler = conversationHandlers[message.from().username()]
-                if (handler != null) {
-                    handler.handle(message)
-                } else if (message.text() != null) {
-                    handleCommand(message)
+                when {
+                    message.forwardFrom() != null -> addMessageToQuoteSession(message)
+                    handler != null -> handler.handle(message)
+                    message.text() != null -> handleCommand(message)
                 }
             } catch (e: Exception) {
                 logger.error("Error handling update", e)
@@ -52,7 +53,7 @@ class Beatrice(private val messageSender: MessageSender,
             val params = match.groupValues[2]
             logger.info("Command: $commandString $params")
             when (commandString) {
-                "save" -> save(message, params)
+                "save" -> endQuoteSession(message, params)
                 "random" -> with(conversationRepository.random()) {
                     if (this != null) {
                         messageSender.replyTo(message, formatConversation(this))
@@ -89,9 +90,17 @@ class Beatrice(private val messageSender: MessageSender,
                 clearHandler(message.from().username())))
     }
 
-    private fun save(message: Message, title: String?) {
-        setHandler(message.from().username(), QuoteConversation(messageSender, message, title, conversationRepository,
-                clearHandler(message.from().username())))
+    private fun addMessageToQuoteSession(message: Message) {
+        val user = message.from().username()
+        if (quoteHandlers[user] == null) {
+            quoteHandlers[user] = QuoteConversation(messageSender, message, conversationRepository, clearHandler(user))
+        } else {
+            quoteHandlers[user]!!.add(message)
+        }
+    }
+
+    private fun endQuoteSession(message: Message, title: String?) {
+        quoteHandlers[message.from().username()]?.commit(title)
     }
 
     private fun setHandler(user: String, handler: ConversationHandler) {

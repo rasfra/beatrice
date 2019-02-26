@@ -17,7 +17,7 @@ fun main(args: Array<String>) {
         val config = Config(
                 cmd.getOptionValue("t"),
                 cmd.getOptionValue("cid").toLong(),
-                "jdbc:h2:tcp://localhost/$db"
+                "jdbc:h2:file:$db"
         )
         BotRunner(config).run()
     } catch (e: ParseException) {

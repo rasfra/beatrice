@@ -11,7 +11,8 @@ import org.joda.time.DateTime
 class H2ConversationRepository(private val database: Database) : ConversationRepository {
     override fun store(cMessages: List<ConversationMessage>, cTitle: String?,
                        cSource: Source, cUploadedBy: String?): Conversation {
-        var id: EntityID<Int>? = null
+        var id: EntityID<Int>?
+        var persisted: Conversation? = null
         transaction(database) {
             id = Conversations.insert {
                 it[title] = cTitle
@@ -27,8 +28,9 @@ class H2ConversationRepository(private val database: Database) : ConversationRep
                     it[text] = m.text
                 }
             }
+            persisted = H2Conversation[id!!].toConversation()
         }
-        return H2Conversation[id!!].toConversation()
+        return persisted!!
     }
 
     override fun all(): Collection<Conversation> {
