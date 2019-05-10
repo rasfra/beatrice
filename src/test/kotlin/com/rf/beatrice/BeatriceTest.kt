@@ -34,6 +34,13 @@ class BeatriceTest {
     }
 
     @Test
+    fun help() {
+        beatrice.process(updates("from", "/help"))
+        assertEquals(recordingMessageSender.messages.size, 1)
+        println(recordingMessageSender.messages)
+    }
+
+    @Test
     fun randomFindsRandomQuote() {
         val conversation = conversationRepo.store(listOf(
                 ConversationMessage("user1", "hi"),

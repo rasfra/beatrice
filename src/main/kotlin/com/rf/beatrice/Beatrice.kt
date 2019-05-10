@@ -53,6 +53,7 @@ class Beatrice(private val messageSender: MessageSender,
             val params = match.groupValues[2]
             logger.info("Command: $commandString $params")
             when (commandString) {
+                "help" -> messageSender.replyTo(message, help())
                 "save" -> endQuoteSession(message, params)
                 "random" -> with(conversationRepository.random()) {
                     if (this != null) {
@@ -125,4 +126,6 @@ class Beatrice(private val messageSender: MessageSender,
     private fun formatConversation(c: Conversation): String =
             "*${c.prettyDate()} ${c.title ?: ""}*\n\n```\n${c.text()}\n```"
 
+    private fun help() = "To save a conversation, *forward* all the messages of the conversation to me, then within " +
+            "60 seconds enter '/save <conversation title>' without quotes. Both the content and the title are searchable with /find <some sentence>."
 }
