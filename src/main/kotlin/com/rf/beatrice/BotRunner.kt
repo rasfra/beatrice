@@ -30,14 +30,35 @@ class BotRunner(private val config: Config) {
             }
         })
         val database = Database.connect(config.dataSource, driver = "org.h2.Driver")
-        logger.info("Connectedto H2 server...")
+        logger.info("Connected to H2 server...")
+
+        beatrice(database)
+        botify()
+    }
+
+    fun beatrice(database: Database) {
         val conversationRepository = H2ConversationRepository(database)
         val eventRepository = H2EventRepository(database)
-        val telegramBot = TelegramBot(config.telegramToken)
-        val beatrice = Beatrice(TelegramMessageSender(telegramBot, config.chatId), conversationRepository, eventRepository)
-        telegramBot.setUpdatesListener(beatrice::process)
+        val bot = TelegramBot(config.beatriceToken)
+        val beatrice = Beatrice(TelegramMessageSender(bot, config.chatId), conversationRepository, eventRepository)
+        logger.info("Starting Beatrice...")
+        bot.setUpdatesListener(beatrice::process)
+    }
+
+    fun botify() {
+        val botify = Botify(Spotify(config.spotifyClientId, config.spotifyClientSecret, config.spotifyRefreshToken, config.playlistId))
+        val bot = TelegramBot(config.botifyToken)
+        logger.info("Starting Botify...")
+        bot.setUpdatesListener(botify::process)
     }
 
 }
 
-class Config(val telegramToken: String, val chatId: Long, val dataSource: String)
+class Config(val beatriceToken: String,
+             val chatId: Long,
+             val dataSource: String,
+             val botifyToken: String,
+             val spotifyClientId: String,
+             val spotifyClientSecret: String,
+             val spotifyRefreshToken: String,
+             val playlistId: String)

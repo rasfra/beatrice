@@ -1,26 +1,22 @@
 package com.rf.beatrice
 
-import org.apache.commons.cli.DefaultParser
-import org.apache.commons.cli.Options
-import org.apache.commons.cli.ParseException
+import java.io.FileInputStream
+import java.util.*
 
 fun main(args: Array<String>) {
-    val opts = Options()
-            .addRequiredOption("t", "token", true, "Telegram API token")
-            .addRequiredOption("cid", "chatId", true, "Telegram group chat id")
-            .addRequiredOption("db", "database", true, "path to H2 database file, e.g. ~/quotebot for home folder")
+    val p = Properties()
+    p.load(FileInputStream(System.getProperty("user.home") + "/.beatrice.properties"))
+    val config = Config(
+            p.getProperty("beatrice.token.telegram"),
+            p.getProperty("beatrice.chatid").toLong(),
+            "jdbc:h2:file:${p.getProperty("database.path")}",
+            p.getProperty("botify.token.telegram"),
+            p.getProperty("botify.spotify.clientid"),
+            p.getProperty("botify.spotify.secret"),
+            p.getProperty("botify.spotify.refreshtoken"),
+            p.getProperty("botify.playlistId")
 
-    val parser = DefaultParser()
-    try {
-        val cmd = parser.parse(opts, args)
-        val db = cmd.getOptionValue("db")
-        val config = Config(
-                cmd.getOptionValue("t"),
-                cmd.getOptionValue("cid").toLong(),
-                "jdbc:h2:file:$db"
-        )
-        BotRunner(config).run()
-    } catch (e: ParseException) {
-        e.printStackTrace()
-    }
+    )
+    BotRunner(config).run()
+
 }
