@@ -94,7 +94,7 @@ class Beatrice(private val messageSender: MessageSender,
     private fun addMessageToQuoteSession(message: Message) {
         val user = message.from().username()
         if (quoteHandlers[user] == null) {
-            quoteHandlers[user] = QuoteConversation(messageSender, message, conversationRepository, clearHandler(user))
+            quoteHandlers[user] = QuoteConversation(messageSender, message, conversationRepository) { quoteHandlers.remove(user) }
         } else {
             quoteHandlers[user]!!.add(message)
         }

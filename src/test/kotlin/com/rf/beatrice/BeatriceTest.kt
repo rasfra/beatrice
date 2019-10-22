@@ -78,6 +78,52 @@ class BeatriceTest {
     }
 
     @Test
+    fun `Add a quote`() {
+        process(
+                update("from", "Cool message", "somedude"),
+                update("from", "Another cool message", "somedude"),
+                update("from", "/save testsubject")
+        )
+        process(update("from", "/find testsubject"))
+        assertEquals(2, recordingMessageSender.messages.size)
+        assertTrue(recordingMessageSender.messages[0].contains("sparad"))
+        assertTrue(recordingMessageSender.messages[1].contains("somedude: Cool message\nsomedude: Another cool message"))
+    }
+
+    @Test
+    fun `Add multiple quotes clears session in between`() {
+        process(
+                update("from", "Cool message", "somedude"),
+                update("from", "Another cool message", "somedude"),
+                update("from", "A third cool message", "somedude"),
+                update("from", "/save testsubject"),
+                update("from", "A new quote", "somedude"),
+                update("from", "End of new quote", "somedude2"),
+                update("from", "/save testsubject2")
+        )
+        val results = conversationRepo.all().toList()
+        assertEquals(2, results.size)
+        assertEquals(3, results[0].messages.size)
+        assertEquals(2, results[1].messages.size)
+    }
+
+    @Test
+    fun `Quote handler mixed sessions keeps quotes separate`() {
+        process(
+                update("user1", "msg1", "somedude"),
+                update("user2", "msg2", "somedude"),
+                update("user1", "msg3", "somedude"),
+                update("user2", "msg4", "somedude"),
+                update("user1", "/save conv1"),
+                update("user2", "/save conv2")
+        )
+        val results = conversationRepo.all().toList()
+        assertEquals(2, results.size)
+        assertEquals(2, results[0].messages.size)
+        assertEquals(2, results[1].messages.size)
+    }
+
+    @Test
     fun bookEventSuccess() {
         val eventDate = LocalDate.now().plusDays(1).toDateTime(LocalTime.parse("18:00"))
         val title = "my title"
@@ -115,17 +161,29 @@ class BeatriceTest {
         return eventRepo.list().first()
     }
 
-    private fun update(from: String, text: String): Update {
-        val from = mock<User> {
+    private fun update(from: String, text: String, forwardFrom: String? = null): Update {
+        val fromUser = mock<User> {
             on { username() } doReturn from
+        }
+        val forwardFromUser = forwardFrom?.let { name ->
+            mock<User> {
+                on { username() } doReturn name
+            }
         }
         val message = mock<Message> {
             on { text() } doReturn text
-            on { from() } doReturn from
+            on { from() } doReturn fromUser
+            if (forwardFromUser != null) {
+                on { forwardFrom() } doReturn forwardFromUser
+            }
         }
         return mock {
             on { message() } doReturn message
         }
+    }
+
+    private fun process(vararg updates: Update) {
+        updates.forEach { beatrice.process(listOf(it)) }
     }
 
     private fun updates(from: String, text: String): List<Update> {
