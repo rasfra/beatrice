@@ -6,4 +6,5 @@ interface ConversationRepository {
     fun get(id: Int): Conversation
     fun search(s: String): Conversation?
     fun random(): Conversation?
+    fun delete(id: Int): Boolean
 }

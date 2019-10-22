@@ -20,7 +20,7 @@ class Conversation(
                 str += "${m.text}\n"
             }
         }
-        str += "($source)"
+        str += "($source $id)"
         return str
     }
 

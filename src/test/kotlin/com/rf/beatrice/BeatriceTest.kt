@@ -41,7 +41,7 @@ class BeatriceTest {
     }
 
     @Test
-    fun randomFindsRandomQuote() {
+    fun `Random returns random quote`() {
         val conversation = conversationRepo.store(listOf(
                 ConversationMessage("user1", "hi"),
                 ConversationMessage("user2", "no")),
@@ -55,7 +55,7 @@ class BeatriceTest {
     }
 
     @Test
-    fun findFindsQuote() {
+    fun `Find quote`() {
         val conversation = conversationRepo.store(listOf(
                 ConversationMessage("user1", "hi"),
                 ConversationMessage("user2", "no")),
@@ -69,12 +69,12 @@ class BeatriceTest {
     }
 
     @Test
-    fun findNoQuote() {
+    fun `No quote found answers`() {
         val updates = updates("from", "/find hello")
         beatrice.process(updates)
         assertEquals(recordingMessageSender.messages.size, 1)
         val text = recordingMessageSender.messages[0]
-        assertTrue(text.contains("Inga resultat"))
+        assertTrue(text.contains("No results"))
     }
 
     @Test
@@ -121,6 +121,20 @@ class BeatriceTest {
         assertEquals(2, results.size)
         assertEquals(2, results[0].messages.size)
         assertEquals(2, results[1].messages.size)
+    }
+
+    @Test
+    fun `Delete quote`() {
+        process(
+                update("from", "Cool message", "somedude"),
+                update("from", "/save testsubject")
+        )
+        process(update("from", "/find testsubject"))
+        val last = recordingMessageSender.messages.last()
+        val id = """\(TELEGRAM (\d+)\)""".toRegex().find(last)?.groupValues?.get(1)?.toIntOrNull()
+        assertTrue { conversationRepo.get(id!!).title == "testsubject" }
+        process(update("from", "/delete $id"))
+        assertTrue { conversationRepo.all().isEmpty() }
     }
 
     @Test

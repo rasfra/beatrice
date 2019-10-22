@@ -18,7 +18,7 @@ class Beatrice(private val messageSender: MessageSender,
     private val logger = LoggerFactory.getLogger(this::class.java)
     private val eventNotifier = EventNotifier(messageSender, eventRepository)
     private val quoteHandlers = HashMap<String, QuoteConversation>()
-    private val conversationHandlers = HashMap<String, ConversationHandler>()
+    private val sessions = HashMap<String, ConversationHandler>()
 
     init {
         eventNotifier.start()
@@ -29,7 +29,7 @@ class Beatrice(private val messageSender: MessageSender,
         if (message != null) {
             logger.debug("Recieved update: ${message.from().username()}: ${message.text()}")
             try {
-                val handler = conversationHandlers[message.from().username()]
+                val handler = sessions[message.from().username()]
                 when {
                     message.forwardFrom() != null -> addMessageToQuoteSession(message)
                     handler != null -> handler.handle(message)
@@ -59,13 +59,19 @@ class Beatrice(private val messageSender: MessageSender,
                     if (this != null) {
                         messageSender.replyTo(message, formatConversation(this))
                     } else
-                        messageSender.replyTo(message, "Inga resultat \uD83D\uDE31") // screaming
+                        messageSender.replyTo(message, "No results \uD83D\uDE31") // screaming
                 }
                 "find" -> with(conversationRepository.search(params)) {
                     if (this != null)
                         messageSender.replyTo(message, formatConversation(this))
                     else
-                        messageSender.replyTo(message, "Inga resultat \uD83D\uDE31") // screaming
+                        messageSender.replyTo(message, "No results \uD83D\uDE31") // screaming
+                }
+                "delete" -> {
+                    if (params.toIntOrNull()?.let { conversationRepository.delete(it) } == true)
+                        messageSender.replyTo(message, "Deleted")
+                    else
+                        messageSender.replyTo(message, "No quote found")
                 }
                 "eventcreate" -> book(message)
                 "eventcancel" -> removeEvent(message)
@@ -105,15 +111,15 @@ class Beatrice(private val messageSender: MessageSender,
     }
 
     private fun setHandler(user: String, handler: ConversationHandler) {
-        val currentHandler = conversationHandlers[user]
+        val currentHandler = sessions[user]
         if (currentHandler != null) {
             currentHandler.cancel()
-            conversationHandlers.remove(user)
+            sessions.remove(user)
         }
-        conversationHandlers[user] = handler
+        sessions[user] = handler
     }
 
-    private fun clearHandler(user: String): () -> Unit = { conversationHandlers.remove(user) }
+    private fun clearHandler(user: String): () -> Unit = { sessions.remove(user) }
 
     private fun sendError(m: Message, e: Exception) {
         try {

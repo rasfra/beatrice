@@ -30,6 +30,10 @@ class InMemoryConversationRepository : ConversationRepository {
 
     override fun random(): Conversation? = conversations.random()
 
+    override fun delete(id: Int): Boolean {
+        return conversations.removeIf { it.id == id }
+    }
+
     private fun List<Conversation>.random(): Conversation? =
             when {
                 size > 1 -> get(random.nextInt(size - 1))

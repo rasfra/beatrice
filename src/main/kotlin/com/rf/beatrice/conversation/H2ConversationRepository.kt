@@ -33,37 +33,33 @@ class H2ConversationRepository(private val database: Database) : ConversationRep
         return persisted!!
     }
 
-    override fun all(): Collection<Conversation> {
-        return transaction(database) {
-            H2Conversation.wrapRows(Conversations.selectAll()).map { it.toConversation() }
-        }
+    override fun all() = transaction(database) {
+        H2Conversation.wrapRows(Conversations.selectAll()).map { it.toConversation() }
     }
 
-    override fun get(id: Int): Conversation {
-        return transaction(database) {
-            H2Conversation.findById(id)?.let { it.toConversation() }!!
-        }
+    override fun get(id: Int) = transaction(database) {
+        H2Conversation.findById(id)?.let { it.toConversation() }!!
     }
 
-    override fun search(s: String): Conversation? {
-        return transaction(database) {
-            H2Conversation.wrapRows(Conversations.innerJoin(Messages)
-                    .select { Messages.text like "%$s%" or (Conversations.title like "%$s%") }
-                    .orderBy(org.jetbrains.exposed.sql.Random())
-                    .limit(1)
-            ).firstOrNull()?.let { it.toConversation() }
-        }
+    override fun search(s: String) = transaction(database) {
+        H2Conversation.wrapRows(Conversations.innerJoin(Messages)
+                .select { Messages.text like "%$s%" or (Conversations.title like "%$s%") }
+                .orderBy(org.jetbrains.exposed.sql.Random())
+                .limit(1)
+        ).firstOrNull()?.let { it.toConversation() }
     }
 
-    override fun random(): Conversation? {
-        return transaction(database) {
-            H2Conversation.wrapRows(Conversations
-                    .selectAll()
-                    .orderBy(org.jetbrains.exposed.sql.Random())
-                    .limit(1))
-                    .firstOrNull()?.let { it.toConversation() }
-        }
+    override fun random() = transaction(database) {
+        H2Conversation.wrapRows(Conversations
+                .selectAll()
+                .orderBy(org.jetbrains.exposed.sql.Random())
+                .limit(1))
+                .firstOrNull()?.let { it.toConversation() }
     }
+
+    override fun delete(id: Int): Boolean = transaction(database) {
+        Conversations.deleteWhere { Conversations.id eq id }
+    } > 0
 
     private fun H2Conversation.toConversation(): Conversation {
         return Conversation(
